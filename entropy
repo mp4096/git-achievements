@@ -6,7 +6,6 @@ import math
 import os
 import sys
 import subprocess
-from tqdm import tqdm
 from typing import Optional, Iterable, Iterator
 
 
@@ -43,7 +42,7 @@ def get_entropy(
     repo_path: str, author: Optional[str] = None, after: Optional[str] = None
 ) -> float:
     tally_counter_files: Counter = Counter()
-    for r in tqdm(get_commits_list(repo_path, author, after)):
+    for r in get_commits_list(repo_path, author, after):
         tally_counter_files.update(get_changed_files(repo_path, r))
     total = len(tally_counter_files)
     return compute_entropy(v / total for v in tally_counter_files.values())
