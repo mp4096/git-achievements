@@ -53,8 +53,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Compute entropy of git commits based on touched files."
     )
-    parser.add_argument("--author", type=str, default="", help="author email")
-    parser.add_argument("--after", type=str, default="", help="after timestamp")
+    parser.add_argument(
+        "--author", type=str, default="", required=False, help="author email"
+    )
+    parser.add_argument(
+        "--after", type=str, default="", required=False, help="after timestamp"
+    )
     parser.add_argument("repo_path", type=str, help="path to the repo")
     args = parser.parse_args(sys.argv[1:])
 
