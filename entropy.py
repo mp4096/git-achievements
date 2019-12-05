@@ -14,13 +14,18 @@ def compute_entropy(normalized_probabilities: Iterable[float]) -> float:
 
 
 def get_commits_list(
-    repo_path: str, author: Optional[str] = None, after: Optional[str] = None
+    repo_path: str,
+    author: Optional[str] = None,
+    after: Optional[str] = None,
+    rev_list_args: Optional[str] = None,
 ) -> Iterator[str]:
     args = []
     if author:
         args.append("--author={:s}".format(author))
     if after:
         args.append("--after={:s}".format(after))
+    if rev_list_args:
+        args.extend(rev_list_args.split())
     result = subprocess.run(
         ["git", "rev-list"] + args + ["HEAD"],
         cwd=os.path.abspath(repo_path),
@@ -39,10 +44,13 @@ def get_changed_files(repo_path: str, revision: str) -> Iterator[str]:
 
 
 def get_entropy(
-    repo_path: str, author: Optional[str] = None, after: Optional[str] = None
+    repo_path: str,
+    author: Optional[str] = None,
+    after: Optional[str] = None,
+    rev_list_args: Optional[str] = None,
 ) -> float:
     tally_counter_files: Counter = Counter()
-    for r in get_commits_list(repo_path, author, after):
+    for r in get_commits_list(repo_path, author, after, rev_list_args):
         tally_counter_files.update(get_changed_files(repo_path, r))
     total = sum(tally_counter_files.values())
     if total == 0:
@@ -60,7 +68,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--after", type=str, default="", required=False, help="after timestamp"
     )
+    parser.add_argument(
+        "--rev-list-args",
+        type=str,
+        default="",
+        required=False,
+        help="any further arguments for git rev-list",
+    )
     parser.add_argument("repo_path", type=str, help="path to the repo")
     args = parser.parse_args(sys.argv[1:])
 
-    print(get_entropy(args.repo_path, args.author, args.after))
+    print(get_entropy(args.repo_path, args.author, args.after, args.rev_list_args))
