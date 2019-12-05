@@ -44,7 +44,7 @@ def get_entropy(
     tally_counter_files: Counter = Counter()
     for r in get_commits_list(repo_path, author, after):
         tally_counter_files.update(get_changed_files(repo_path, r))
-    total = len(tally_counter_files)
+    total = sum(tally_counter_files.values())
     return compute_entropy(v / total for v in tally_counter_files.values())
 
 
