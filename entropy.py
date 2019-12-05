@@ -45,6 +45,8 @@ def get_entropy(
     for r in get_commits_list(repo_path, author, after):
         tally_counter_files.update(get_changed_files(repo_path, r))
     total = sum(tally_counter_files.values())
+    if total == 0:
+        raise RuntimeError("No changed files for the query")
     return compute_entropy(v / total for v in tally_counter_files.values())
 
 
