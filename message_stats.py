@@ -5,7 +5,7 @@ import statistics
 import os
 import sys
 import subprocess
-from typing import Optional, Iterator, Tuple
+from typing import Optional, Iterator, Iterable, Tuple, List
 
 
 def get_commits_list(
@@ -39,15 +39,16 @@ def get_commit_message(repo_path: str, revision: str) -> str:
 
 
 def get_length_stats(
-    repo_path: str,
+    repo_paths: Iterable[str],
     author: Optional[str] = None,
     after: Optional[str] = None,
     rev_list_args: Optional[str] = None,
 ) -> Tuple[int, int, int, float, float]:
-    messages = [
-        get_commit_message(repo_path, r)
-        for r in get_commits_list(repo_path, author, after, rev_list_args)
-    ]
+    messages = (
+        get_commit_message(repo, revision)
+        for repo in repo_paths
+        for revision in get_commits_list(repo, author, after, rev_list_args)
+    )
     lengths = [len(m) for m in messages]
     return (
         len(lengths),
@@ -73,11 +74,11 @@ if __name__ == "__main__":
         required=False,
         help="any further arguments for git rev-list",
     )
-    parser.add_argument("repo_path", type=str, help="path to the repo")
+    parser.add_argument("repo_paths", type=str, nargs="+", help="path to the repos")
     args = parser.parse_args(sys.argv[1:])
 
     total_num, min_length, max_length, median, mean = get_length_stats(
-        args.repo_path, args.author, args.after, args.rev_list_args
+        args.repo_paths, args.author, args.after, args.rev_list_args
     )
     print("Commit message stats:")
     print("  total number of commits: {:4d}".format(total_num))

@@ -44,14 +44,17 @@ def get_changed_files(repo_path: str, revision: str) -> Iterator[str]:
 
 
 def get_entropy(
-    repo_path: str,
+    repo_paths: Iterable[str],
     author: Optional[str] = None,
     after: Optional[str] = None,
     rev_list_args: Optional[str] = None,
 ) -> float:
-    tally_counter_files: Counter = Counter()
-    for r in get_commits_list(repo_path, author, after, rev_list_args):
-        tally_counter_files.update(get_changed_files(repo_path, r))
+    tally_counter_files = Counter(
+        os.path.join(os.path.abspath(repo), f)
+        for repo in repo_paths
+        for revision in get_commits_list(repo, author, after, rev_list_args)
+        for f in get_changed_files(repo, revision)
+    )
     total = sum(tally_counter_files.values())
     if total == 0:
         raise RuntimeError("No changed files for the query")
@@ -75,7 +78,7 @@ if __name__ == "__main__":
         required=False,
         help="any further arguments for git rev-list",
     )
-    parser.add_argument("repo_path", type=str, help="path to the repo")
+    parser.add_argument("repo_paths", type=str, nargs="+", help="path to the repos")
     args = parser.parse_args(sys.argv[1:])
 
-    print(get_entropy(args.repo_path, args.author, args.after, args.rev_list_args))
+    print(get_entropy(args.repo_paths, args.author, args.after, args.rev_list_args))
